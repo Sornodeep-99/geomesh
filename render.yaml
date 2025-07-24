@@ -30,4 +30,4 @@ databases:
   # This tells Render to connect to our existing Neon database
   - name: geomesh-db-neon
     # This will be added in the Render dashboard
-    connectionString: ${{ secrets.NEON_DB_URL }}
+    connectionString: ${{ secrets.NEON_DB_URL }} # Placeholder for the Neon DB connection string
