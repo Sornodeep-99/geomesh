@@ -1,0 +1,30 @@
+# .gitpod.yml
+tasks:
+  - name: Setup & Start Services
+    # This part runs once when the workspace is first created
+    init: |
+      echo "Building Docker images..."
+      docker build -t geomesh-backend -f backend/Dockerfile backend
+      docker build -t geomesh-frontend -f frontend/Dockerfile frontend
+    # This part runs every time the workspace starts
+    command: |
+      echo "Starting backend container..."
+      # Pass the Neon URL as an environment variable
+      gp env NEON_DB_URL="$(echo $NEON_DB_URL)"
+      docker run --rm -d --name geomesh-backend -e DATABASE_URL="$NEON_DB_URL" -p 3000:3000 geomesh-backend
+
+      echo "Starting frontend container..."
+      # Get the public URLs for the running services
+      BACKEND_URL=$(gp url 3000)
+      WEBSOCKET_URL=$(echo $BACKEND_URL | sed 's/https/wss/')
+
+      docker run --rm -p 5173:3000 -e PUBLIC_API_URL="$BACKEND_URL" -e PUBLIC_WEBSOCKET_URL="$WEBSOCKET_URL" geomesh-frontend
+
+# Define which ports to expose and what to do when they are ready
+ports:
+  - port: 5173
+    onOpen: open-browser
+    name: GeoMesh Frontend
+    description: The main application UI
+  - port: 3000
+    onOpen: ignore
