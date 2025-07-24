@@ -1,4 +1,4 @@
-# render.yaml
+# render.yaml (Corrected)
 services:
   # Backend Service Configuration
   - type: web
@@ -6,12 +6,7 @@ services:
     env: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    envVars:
-      # The DATABASE_URL will be added securely in the Render dashboard
-      - key: DATABASE_URL
-        fromDatabase:
-          name: geomesh-db-neon # Placeholder name for our DB
-          property: connectionString
+    # NOTE: We will add the DATABASE_URL in the Render UI
 
   # Frontend Service Configuration
   - type: web
@@ -20,14 +15,9 @@ services:
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
     envVars:
-      # These special values automatically use the live URL of your deployed backend
+      # This tells the frontend the live URL of the deployed backend
       - key: PUBLIC_API_URL
         value: ${{geomesh-backend.url}}
+      # This creates the correct wss:// URL for the live WebSocket
       - key: PUBLIC_WEBSOCKET_URL
-        value: wss://${{geomesh-backend.url}}
-
-databases:
-  # This tells Render to connect to our existing Neon database
-  - name: geomesh-db-neon
-    # This will be added in the Render dashboard
-    connectionString: ${{ secrets.NEON_DB_URL }} # Placeholder for the Neon DB connection string
+        value: wss://${{geomesh-backend.url.replace('https://', '')}}
